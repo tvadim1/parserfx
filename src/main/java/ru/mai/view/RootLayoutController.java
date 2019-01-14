@@ -1,5 +1,6 @@
 package ru.mai.view;
 
+import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,22 +9,23 @@ import java.util.ResourceBundle;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
-import com.sun.org.apache.xpath.internal.operations.Neg;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.stage.FileChooser;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.mai.db.DataMapperImplementation;
 import ru.mai.db.IDataMapper;
 import ru.mai.db.IOData;
-import ru.mai.db.connection.TestConnect;
+import ru.mai.utils.DocReader;
 import ru.mai.model.Data;
 
 public class RootLayoutController implements Initializable{
+    //doc
+    private DocReader dr;
+    private String inputText = "";
+    private String sentences[];
     //db
     private IDataMapper mapper = new DataMapperImplementation();
     private IOData newObject;
@@ -31,11 +33,115 @@ public class RootLayoutController implements Initializable{
     private String input = "";
     private List<Data>parsedText = new ArrayList<>();
 
+    private String line = "------------------------------------------------------------------------------------------------------\n";
+
     @FXML
     private TextField tf;
     @FXML
     private TextArea ta;
+    @FXML
+    private Button bPT;
+    @FXML
+    private Button bPS;
+    @FXML
+    private Button bSS;
+    @FXML
+    private ComboBox<String>comboBox;
 
+    @FXML
+    private void handleOpen() {
+        FileChooser fileChooser = new FileChooser();//Класс работы с диалогом выборки и сохранения
+        fileChooser.setTitle("Открыть файл");//Заголовок диалога
+        FileChooser.ExtensionFilter extFilter =
+                new FileChooser.ExtensionFilter("*.doc", "*.doc");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("*.docx", "*.docx")
+        );
+        //Расширение
+        fileChooser.getExtensionFilters().add(extFilter);
+        File file = fileChooser.showOpenDialog(null);
+        if (file != null) {
+            System.out.println("Файл открыт: " + file.toString());
+        }
+        else {
+            System.out.println("Файл не удачно открылся");
+        }
+        //этап чтения из .doc
+        try {
+            InputStream is = new BufferedInputStream(new FileInputStream(file.toString()));
+            try {
+                //System.out.println(dr.read(is));
+                inputText = dr.read(is);
+            } catch (Exception e) { e.printStackTrace(); }
+            is.close();
+        } catch (IOException e) { e.printStackTrace(); }
+        //этап разбора
+        sentences = inputText.split("[.!?]\\s*");
+        //вывод инф
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Parser FX");
+        alert.setHeaderText(null);
+        alert.setContentText("Текст загружен");
+        alert.showAndWait();
+        //кнопки
+        bPS.setDisable(false);
+        bPT.setDisable(false);
+        bSS.setDisable(false);
+    }
+    @FXML
+    private void handleParseText() {
+        parsedText.clear();
+        for (int i = 0; i < sentences.length; ++i) {
+            makeRequest(sentences[i]);
+        }
+        //вставка в БД
+        for (Data data : parsedText){
+            if (data.getDep().equals("отрицательная частица не")){mapper.insertTable(data.getDep(), "NE");}
+            else if (data.getDep().equals("вспомогательное сказуемое")){mapper.insertTable(data.getDep(), "AUXSKAZ");}
+            else if (data.getDep().equals("часть составного сказуемого")){mapper.insertTable(data.getDep(), "CHASTSKAZ");}
+            else if (data.getDep().equals("числительное")){mapper.insertTable(data.getDep(), "CHISLIT");}
+            else if (data.getDep().equals("дополнение")){mapper.insertTable(data.getDep(), "DOPOL");}
+            else if (data.getDep().equals("междометие")){mapper.insertTable(data.getDep(), "MEJD");}
+            else if (data.getDep().equals("обращение")){mapper.insertTable(data.getDep(), "OBRASH");}
+            else if (data.getDep().equals("обстоятельство")){mapper.insertTable(data.getDep(), "OBST");}
+            else if (data.getDep().equals("определение")){mapper.insertTable(data.getDep(), "OPREDEL");}
+            else if (data.getDep().equals("подлежащее")){mapper.insertTable(data.getDep(), "PODL");}
+            else if (data.getDep().equals("подчинительный союз")){mapper.insertTable(data.getDep(), "PODSOUZ");}
+            else if (data.getDep().equals("предлог")){mapper.insertTable(data.getDep(), "PREDLOG");}
+            else if (data.getDep().equals("сказуемое")){mapper.insertTable(data.getDep(), "SKAZ");}
+            else if (data.getDep().equals("союз")){mapper.insertTable(data.getDep(), "SOUZ");}
+            else if (data.getDep().equals("устойчивое выражение")){mapper.insertTable(data.getDep(), "USTVIR");}
+        }
+    }
+
+    @FXML
+    private void handleParseSelected() {
+        for (Data data : parsedText){
+            if (comboBox.getValue().toString().equals(data.getDep())){
+                ta.appendText(data.getWord()+"\t->\t"+data.getDep()+"\n");
+            }
+        }
+        ta.appendText(line);
+    }
+
+    @FXML
+    private void handleShowStats() {
+        if (comboBox.getValue().toString().equals("отрицательная частица не")){mapper.selectCount(ta, "NE");}
+        else if (comboBox.getValue().toString().equals("вспомогательное сказуемое")){mapper.selectCount(ta, "AUXSKAZ");}
+        else if (comboBox.getValue().toString().equals("часть составного сказуемого")){mapper.selectCount(ta, "CHASTSKAZ");}
+        else if (comboBox.getValue().toString().equals("числительное")){mapper.selectCount(ta, "CHISLIT");}
+        else if (comboBox.getValue().toString().equals("дополнение")){mapper.selectCount(ta, "DOPOL");}
+        else if (comboBox.getValue().toString().equals("междометие")){mapper.selectCount(ta, "MEJD");}
+        else if (comboBox.getValue().toString().equals("обращение")){mapper.selectCount(ta, "OBRASH");}
+        else if (comboBox.getValue().toString().equals("обстоятельство")){mapper.selectCount(ta, "OBST");}
+        else if (comboBox.getValue().toString().equals("определение")){mapper.selectCount(ta, "OPREDEL");}
+        else if (comboBox.getValue().toString().equals("подлежащее")){mapper.selectCount(ta, "PODL");}
+        else if (comboBox.getValue().toString().equals("подчинительный союз")){mapper.selectCount(ta, "PODSOUZ");}
+        else if (comboBox.getValue().toString().equals("предлог")){mapper.selectCount(ta, "PREDLOG");}
+        else if (comboBox.getValue().toString().equals("сказуемое")){mapper.selectCount(ta, "SKAZ");}
+        else if (comboBox.getValue().toString().equals("союз")){mapper.selectCount(ta, "SOUZ");}
+        else if (comboBox.getValue().toString().equals("устойчивое выражение")){mapper.selectCount(ta, "USTVIR");}
+    }
     @FXML
     public void handleParse(){
         input = tf.getText();
@@ -47,6 +153,7 @@ public class RootLayoutController implements Initializable{
             alert.showAndWait();
         }
         else {
+            parsedText.clear();
             makeRequest(input);
         }
     }
@@ -55,10 +162,31 @@ public class RootLayoutController implements Initializable{
     public void initialize(URL location, ResourceBundle resources) {
         ta.setEditable(false);
         tf.setText("Корабли уходят в море.");
+        bPS.setDisable(true);
+        bPT.setDisable(true);
+        bSS.setDisable(true);
+
+        comboBox.getItems().addAll(
+        "отрицательная частица не",
+                "определение",
+                "дополнение",
+                "подлежащее",
+                "обстоятельство",
+                "сказуемое",
+                "часть составного сказуемого",
+                "вспомогательное сказуемое",
+                "числительное",
+                "предлог",
+                "союз",
+                "подчинительный союз",
+                "обращение",
+                "междометие",
+                "устойчивое выражение"
+        );
+
     }
 
     private void makeRequest(String input) {
-        parsedText.clear();
         String output = null;
         try {
             //get
@@ -132,11 +260,12 @@ public class RootLayoutController implements Initializable{
             else if (dep.contains("dep")){ dep = "Не определено!"; }
 
             parsedText.add(new Data(word, dep));
+            ta.appendText(word+"\t->\t"+dep+"\n");
         }
-        for (Data data : parsedText){
+        /*for (Data data : parsedText){
             ta.appendText(data.getWord()+"\t->\t"+data.getDep()+"\n");
-        }
-        ta.appendText("--------------------------------------------------------------------------------------------------------\n");
+        }*/
+        ta.appendText(line);
     }
 
     private String cut(String in){
@@ -152,7 +281,7 @@ public class RootLayoutController implements Initializable{
 
         /* вывод */
         mapper.selectAll(ta);
-        ta.appendText("--------------------------------------------------------------------------------------------------------\n");
+        ta.appendText(line);
     }
 
     @FXML
@@ -166,7 +295,7 @@ public class RootLayoutController implements Initializable{
 
         /* добавление */
         mapper.insert(newObject, ta);
-        ta.appendText("--------------------------------------------------------------------------------------------------------\n");
+        ta.appendText(line);
 
 
 //        /* поиск */

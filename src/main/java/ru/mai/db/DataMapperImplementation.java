@@ -59,6 +59,25 @@ public final class DataMapperImplementation implements IDataMapper {
     }
 
     @Override
+    public void insertTable(String input, String tableName) throws DataMapperException {
+        Statement statement = null;
+        try {
+            DatabaseConnection.getInstance();
+            statement = DatabaseConnection.getInstance().getConnection().createStatement();
+
+            String sql = "insert into "+tableName+" (`input`) values(\""+input+"\");";
+            statement.executeUpdate(sql);
+        } catch (SQLException e) {
+        }finally{
+            try {
+                DatabaseConnection.getInstance().getConnection().close();
+                statement.close();
+            } catch (SQLException e) {
+            }
+        }
+    }
+
+    @Override
     public void delete(IOData xyObject) throws DataMapperException {
         if (this.getArrayList().contains(xyObject)) {
             this.getArrayList().remove(xyObject);
@@ -80,6 +99,30 @@ public final class DataMapperImplementation implements IDataMapper {
                 ta.appendText("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
                 ta.appendText("input: " + rs.getString(2)+"\n");
                 ta.appendText("output: " + rs.getString(3)+"\n");
+                ta.appendText("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+            }
+        } catch (SQLException e) {
+        }finally{
+            try {
+                DatabaseConnection.getInstance().getConnection().close();
+                statement.close();
+            } catch (SQLException e) {
+            }
+        }
+    }
+
+    @Override
+    public void selectCount(TextArea ta, String tableName) throws DataMapperException{
+        Statement statement = null;
+        try {
+            DatabaseConnection.getInstance();
+            statement = DatabaseConnection.getInstance().getConnection().createStatement();
+
+            ResultSet rs = statement.executeQuery("select count(*) from "+tableName);
+
+            while(rs.next()){
+                ta.appendText("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+                ta.appendText("count: " + rs.getString(1)+"\n");
                 ta.appendText("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
             }
         } catch (SQLException e) {

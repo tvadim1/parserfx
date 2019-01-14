@@ -1,16 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="331.0" prefWidth="652.0" stylesheets="" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.mai.view.RootLayoutController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="418.0" prefWidth="716.0" stylesheets="" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.mai.view.RootLayoutController">
    <children>
-      <Button layoutX="541.0" layoutY="15.0" mnemonicParsing="false" onAction="#handleParse" prefHeight="24.0" prefWidth="97.0" text="parse" />
+      <Button layoutX="541.0" layoutY="15.0" mnemonicParsing="false" onAction="#handleParse" prefHeight="25.0" prefWidth="162.0" text="parse textfield" />
       <TextField fx:id="tf" layoutX="14.0" layoutY="15.0" prefHeight="25.0" prefWidth="516.0" />
-      <TextArea fx:id="ta" layoutX="14.0" layoutY="48.0" prefHeight="268.0" prefWidth="516.0" />
-      <Button layoutX="541.0" layoutY="253.0" mnemonicParsing="false" onAction="#handleInsert" prefHeight="24.0" prefWidth="97.0" text="insert db" />
-      <Button layoutX="541.0" layoutY="291.0" mnemonicParsing="false" onAction="#handleSelectAll" prefHeight="24.0" prefWidth="97.0" text="select all db" />
+      <TextArea fx:id="ta" layoutX="14.0" layoutY="48.0" prefHeight="358.0" prefWidth="516.0" />
+      <Button layoutX="541.0" layoutY="48.0" mnemonicParsing="false" onAction="#handleInsert" prefHeight="25.0" prefWidth="162.0" text="insert into plain" />
+      <Button layoutX="541.0" layoutY="83.0" mnemonicParsing="false" onAction="#handleSelectAll" prefHeight="25.0" prefWidth="162.0" text="select * from plain" />
+      <Button layoutX="541.0" layoutY="248.0" mnemonicParsing="false" onAction="#handleOpen" prefHeight="25.0" prefWidth="162.0" text="read text" />
+      <Button fx:id="bPT" layoutX="541.0" layoutY="281.0" mnemonicParsing="false" onAction="#handleParseText" prefHeight="25.0" prefWidth="162.0" text="parse all" />
+      <ComboBox fx:id="comboBox" layoutX="541.0" layoutY="314.0" prefHeight="25.0" prefWidth="162.0" />
+      <Button fx:id="bPS" layoutX="541.0" layoutY="346.0" mnemonicParsing="false" onAction="#handleParseSelected" prefHeight="25.0" prefWidth="162.0" text="show selected only" />
+      <Button fx:id="bSS" layoutX="541.0" layoutY="379.0" mnemonicParsing="false" onAction="#handleShowStats" prefHeight="25.0" prefWidth="162.0" text="show stats for selected" />
    </children>
 </AnchorPane>

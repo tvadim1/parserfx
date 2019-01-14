@@ -9,4 +9,7 @@ public interface IDataMapper {
     void update(IOData xy_object) throws DataMapperException;
     void delete(IOData xy_object) throws DataMapperException;
     void selectAll(TextArea ta) throws DataMapperException;
+
+    void insertTable(String input, String tableName) throws DataMapperException;
+    void selectCount(TextArea ta, String tableName) throws DataMapperException;
 }

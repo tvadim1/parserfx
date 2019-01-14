@@ -126,6 +126,7 @@ public class RootLayoutController implements Initializable{
 
     @FXML
     private void handleShowStats() {
+        //запросы на количество
         if (comboBox.getValue().toString().equals("отрицательная частица не")){mapper.selectCount(ta, "NE");}
         else if (comboBox.getValue().toString().equals("вспомогательное сказуемое")){mapper.selectCount(ta, "AUXSKAZ");}
         else if (comboBox.getValue().toString().equals("часть составного сказуемого")){mapper.selectCount(ta, "CHASTSKAZ");}
